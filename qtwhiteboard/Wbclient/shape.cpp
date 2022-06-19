@@ -298,6 +298,7 @@ void SGraffiti::serialize(QJsonObject &obj){
     data.insert("color", QJsonValue((qint64)(m_strokeColor.rgba())));//转换为int型，方便QJsonValue处理
     data.insert("fill_color", QJsonValue((qint64)(m_fillColor.rgba())));
     data.insert("line_width", QJsonValue((qint64)(m_strokeWidth)));
+
     QJsonArray points;
 
     int ptCount = m_path.elementCount();
@@ -328,3 +329,83 @@ void SGraffiti::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
     painter->drawPath(path);
     painter->restore();
 }
+
+
+
+
+//SText
+SText::SText(QString text): Shape(tt_Text), m_rcBounding(0, 0, 0, 0){
+	m_text=text;
+	//qDebug() << "SText";
+}
+
+void SText::setStartPoint(const QPointF &pos){
+    setPos(pos);
+    //setPos(0,0);
+    m_startPosScene = pos;
+}
+
+void SText::setEndPoint(const QPointF &pos){//找到左上角，定位到场景中去
+    m_endPosScene = pos;
+    qreal startX = m_startPosScene.x();
+    qreal startY = m_startPosScene.y();
+    setPos(startX, startY);
+}
+
+
+void SText::setStrokeWidth(float w){
+    m_strokeWidth = w;
+    m_pen.setWidth(w);
+
+	int fontSize=w+10;
+	m_font=QFont( "" , fontSize, QFont::Normal);
+}
+
+void SText::setStrokeColor(const QColor &color){
+    m_strokeColor = color;
+    m_pen.setColor(color);
+}
+
+void SText::serialize(QJsonObject &obj){
+    obj.insert("type", QJsonValue("text"));
+    QJsonObject data;
+    data.insert("color", QJsonValue((qint64)(m_strokeColor.rgba())));//转换为int型，方便QJsonValue处理
+    data.insert("fill_color", QJsonValue((qint64)(m_fillColor.rgba())));
+    data.insert("line_width", QJsonValue((qint64)(m_strokeWidth)));
+    data.insert("text", m_text);
+}
+
+
+QRectF SText::boundingRect() const {
+    return m_rcBounding;
+}
+
+
+bool SText::isValid(){
+    return !m_text.isEmpty();
+}
+
+
+void SText::setText(QString text) {
+    m_text=text;
+}
+
+void SText::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+{
+    painter->save();
+    painter->setPen(m_pen);
+	painter->setFont(m_font);
+
+	QFontMetrics fontmetr(m_font);
+	int text_height= fontmetr.height();
+
+    //坐标变换
+    //QPoint pos(m_startPosScene.x(),m_startPosScene.y());
+
+    QPoint pos(0,text_height);
+	//qDebug() << "paint SText m_text="<<m_text<<"pos="<<pos<<"m_pen="<<m_pen;
+	painter->drawText(pos,m_text);
+    painter->restore();
+}
+
+
