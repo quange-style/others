@@ -2,13 +2,14 @@
 #define SHAPE_H
 
 #include <QtWidgets>
-#endif // SHAPE_H
 enum ToolType {
     tt_Line = 1,
     tt_Graffiti,
     tt_Rectangle,
     tt_Circle,
-    tt_Triangle
+    tt_Triangle,
+    tt_Text,
+    tt_None,
 };
 
 class Shape: public QGraphicsItem{
@@ -147,3 +148,36 @@ protected:
     QPointF m_topLeftInScene;
 
 };
+
+
+//Draw Free
+class SText: public Shape{
+
+public:
+    SText(QString text);
+
+
+    QRectF boundingRect() const override;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
+
+    void setStartPoint(const QPointF &pos) override;
+    void setEndPoint(const QPointF &pos) override;
+    void setStrokeWidth(float w) override;
+    void setStrokeColor(const QColor &color) override;
+    bool isValid() override;
+    void serialize(QJsonObject &obj) override;//图形信息系列化到Json中去
+	void setText(QString text);
+
+protected:
+    QPointF m_startPosScene;
+    QPointF m_endPosScene;
+    QRectF m_rcBounding;
+    QPen m_pen;
+	QFont m_font;
+    QString  m_text;
+
+};
+
+
+#endif // SHAPE_H
+
